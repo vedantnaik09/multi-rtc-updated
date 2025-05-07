@@ -1,0 +1,47 @@
+import { HumanMessage, SystemMessage } from "@langchain/core/messages";
+import { ChatOpenAI } from "@langchain/openai";
+
+export const runtime = "edge";
+
+type Message = {
+  itemFound: boolean;
+  type: string;
+  question: string;
+  experience: string;
+  role: string;
+};
+
+export async function POST(req: Request) {
+  const humanMessage: Message = await req.json();
+  const prompt = {
+    itemFound: humanMessage.itemFound,
+    type: humanMessage.type,
+    question: humanMessage.question,
+    yoe: humanMessage.experience,
+  };
+  const role = humanMessage?.role;
+  let YOE = humanMessage?.experience || "moderate";
+
+  const model = new ChatOpenAI({
+    modelName: "gpt-4o",
+    openAIApiKey: process.env.NEXT_GPT_4O_KEY,
+    temperature: 0,
+  });
+
+  const systemMessage = `Consider an interview is going on for role ${role} between interviewer and candidate with ${YOE} yrs of experience. You'll get the following type of prompt:
+
+{"itemFound": true, "type": "question"/"scenario"/"coding challenge", "question": "the item presented by the interviewer", "experience":"${YOE} years of experience"}
+
+You should generate an answer in a casual, conversational tone appropriate for an interviewee with ${YOE} years of experience. Keep the answers a bit detailed in nature but don't exceed it more than 300 words, make sure the answer is in first person and dont add any new lines in the answer, give the entire answer in a single paragraph. Respond with a JSON structure as follows:
+{"itemFound": true, "type": "[type from prompt]", "question": "[question from prompt]", "experience": "[experience from prompt]", "answer": "your casual, conversational response suitable for someone with ${YOE} years of experience should come here"}
+itemFound should be always true, if in the given prompt it is true.
+Here is the prompt:
+
+Note: Only include the JSON in your response. Ensure all JSON values are properly quoted strings.`;
+
+  const messages = [new SystemMessage(systemMessage), new HumanMessage(`Prompt: ${JSON.stringify(prompt)}`)];
+
+  const response = await model.invoke(messages);
+
+  return Response.json({ llmoutput: response.content });
+}
