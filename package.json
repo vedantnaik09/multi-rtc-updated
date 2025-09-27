@@ -1,0 +1,49 @@
+{
+  "name": "frontend",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev --turbopack",
+    "build": "next build --turbopack",
+    "start": "next start"
+  },
+  "dependencies": {
+    "@types/firebase": "^2.4.32",
+    "@types/formidable": "^3.4.5",
+    "@types/hark": "^1.2.5",
+    "@types/recordrtc": "^5.6.14",
+    "@types/simple-peer": "^9.11.8",
+    "@types/socket.io-client": "^1.4.36",
+    "@types/ws": "^8.18.1",
+    "audio-decode": "^2.2.3",
+    "axios": "^1.12.2",
+    "eslint": "^9.36.0",
+    "eslint-config-next": "^15.5.4",
+    "firebase": "^12.3.0",
+    "firebase-admin": "^13.5.0",
+    "formidable": "^3.5.4",
+    "fs": "^0.0.1-security",
+    "getusermedia": "^2.0.1",
+    "groq-sdk": "^0.32.0",
+    "hark": "^1.2.3",
+    "langchain": "^0.3.34",
+    "next": "^15.5.4",
+    "openai": "^5.23.0",
+    "postcss": "^8.5.6",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "react-hot-toast": "^2.6.0",
+    "react-icons": "^5.5.0",
+    "recordrtc": "^5.6.2",
+    "simple-peer": "^9.11.1",
+    "socket.io-client": "^4.8.1"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^20.19.17",
+    "@types/react": "^19.1.13",
+    "@types/react-dom": "^19.1.9",
+    "tailwindcss": "^4.1.13",
+    "typescript": "^5.9.2"
+  }
+}

@@ -1,0 +1,308 @@
+// "use client";
+// import React, { Suspense, useEffect, useRef, useState } from "react";
+// import { useSearchParams, usePathname, useRouter } from "next/navigation";
+// import dynamic from "next/dynamic";
+// import { FaMicrophone, FaMicrophoneAltSlash, FaVideo, FaVideoSlash, FaCopy, FaCamera, FaPhoneSlash } from "react-icons/fa";
+// import { toast } from "react-hot-toast";
+// import AuthWrapper from "@/components/AuthWrapper";
+// import ScreenshotView from "@/components/ScreenshotView";
+
+// // Import all the hooks
+// import {
+//   useWebRTCState,
+//   useWebRTCHelpers,
+//   useHangupEffect,
+//   useIceConnectionStateChange,
+//   useRemoteVideoRefsEffect,
+//   useWebRTCInitEffect,
+//   useStreamEffect,
+//   useDebugEffect,
+//   useMediaControlsTranscript,
+//   useHangup,
+//   useHandleCallButtonClick,
+//   useHandleAnswerButtonClickTranscript
+// } from "@/hooks";
+
+// type OfferAnswerPair = {
+//   offer: {
+//     sdp: string | null;
+//     type: RTCSdpType;
+//   } | null;
+//   answer: {
+//     sdp: string | null;
+//     type: RTCSdpType;
+//   } | null;
+// };
+
+// const Page = () => {
+//   return (
+//     <Suspense fallback={<div>Loading...</div>}>
+//       <AuthWrapper>
+//         <TranscriptMeet />
+//       </AuthWrapper>
+//     </Suspense>
+//   );
+// };
+
+// const TranscriptMeet = () => {
+//   const searchParams = useSearchParams();
+//   const pathname = usePathname();
+//   const { replace } = useRouter();
+
+//   const RealTimeTranscript = dynamic(() => import("./realTimeTranscript"), {
+//     ssr: false,
+//   });
+
+//   // Initialize all state using hooks
+//   const {
+//     isClient,
+//     setIsClient,
+//     inCall,
+//     setInCall,
+//     callId,
+//     setCallId,
+//     isHost,
+//     setIsHost,
+//     webcamButtonRef,
+//     callButtonRef,
+//     callInputRef,
+//     answerButtonRef,
+//     hangupButtonRef,
+//     webcamVideoRef,
+//     duplicateVideoRef,
+//     pcs,
+//     setPcs,
+//     myIndex,
+//     setMyIndex,
+//     remoteVideoRefs,
+//     setRemoteVideoRefs,
+//     nonNullRemoteVideoRefs,
+//     setNonNullRemoteVideoRefs,
+//     remoteStreams,
+//     setRemoteStreams,
+//     micEnabled,
+//     setMicEnabled,
+//     videoEnabled,
+//     setVideoEnabled,
+//     accessGiven,
+//     setAccessGiven,
+//     nameList,
+//     setNameList,
+//     stream,
+//     setStream,
+//     localStreamRef,
+//     beforeCall,
+//     setBeforeCall,
+//     afterCall,
+//     setAfterCall,
+//     callLeft,
+//     setCallLeft
+//   } = useWebRTCState();
+
+//   // Initialize helpers
+//   const { generateShortId, servers } = useWebRTCHelpers();
+
+//   // Initialize action hooks
+//   const { hangup } = useHangup(
+//     callId,
+//     myIndex,
+//     pcs,
+//     setRemoteStreams,
+//     setRemoteVideoRefs,
+//     setPcs
+//   );
+
+//   const { handleCallButtonClick } = useHandleCallButtonClick(
+//     setInCall,
+//     hangupButtonRef,
+//     generateShortId,
+//     setCallId,
+//     pathname,
+//     replace,
+//     callInputRef,
+//     setMyIndex,
+//     setIsHost,
+//     servers,
+//     setPcs,
+//     localStreamRef,
+//     setRemoteStreams,
+//     setNameList
+//   );
+
+//   const { handleAnswerButtonClick } = useHandleAnswerButtonClickTranscript(
+//     setInCall,
+//     hangupButtonRef,
+//     searchParams,
+//     setCallId,
+//     pathname,
+//     replace,
+//     callInputRef,
+//     setMyIndex,
+//     setAfterCall,
+//     afterCall,
+//     servers,
+//     localStreamRef,
+//     setRemoteStreams,
+//     setNameList,
+//     setPcs,
+//     setBeforeCall,
+//     beforeCall,
+//     answerButtonRef
+//   );
+
+//   // Initialize media controls
+//   const { handleMicToggle, handleVideoToggle, copyLink } = useMediaControlsTranscript(
+//     micEnabled,
+//     setMicEnabled,
+//     videoEnabled,
+//     setVideoEnabled,
+//     stream,
+//     webcamVideoRef,
+//     pcs,
+//     localStreamRef
+//   );
+
+//   // Initialize effect hooks
+//   useHangupEffect(callId, myIndex, setRemoteVideoRefs, setRemoteStreams);
+  
+//   const { handleIceConnectionStateChange } = useIceConnectionStateChange(
+//     pcs,
+//     beforeCall,
+//     callLeft,
+//     setRemoteVideoRefs,
+//     setRemoteStreams,
+//     setCallLeft,
+//     setBeforeCall,
+//     setAfterCall
+//   );
+
+//   useRemoteVideoRefsEffect(remoteStreams, remoteVideoRefs, setRemoteVideoRefs);
+
+//   useWebRTCInitEffect(
+//     setIsClient,
+//     setStream,
+//     setAccessGiven,
+//     setVideoEnabled,
+//     setMicEnabled,
+//     webcamVideoRef,
+//     callButtonRef,
+//     answerButtonRef,
+//     webcamButtonRef,
+//     pcs,
+//     searchParams,
+//     setCallId,
+//     callInputRef,
+//     handleAnswerButtonClick,
+//     handleCallButtonClick,
+//     stream
+//   );
+
+//   useStreamEffect(stream, webcamVideoRef);
+//   useDebugEffect(pcs, nameList || []);
+
+//   // Set up peer connection listeners
+//   useEffect(() => {
+//     const listeners = new Map();
+
+//     pcs.forEach((pc, index) => {
+//       const listener = (event: Event) => {
+//         handleIceConnectionStateChange(event.currentTarget as RTCPeerConnection, index);
+//       };
+//       listeners.set(pc, listener);
+//       pc.addEventListener("connectionstatechange", listener);
+//     });
+
+//     return () => {
+//       listeners.forEach((listener, pc) => {
+//         pc.removeEventListener("connectionstatechange", listener);
+//       });
+//     };
+//   }, [pcs, handleIceConnectionStateChange]);
+
+//   return (
+//     <div className="mx-auto p-5 w-full">
+//       <h2 className="text-2xl font-semibold my-4">Multi-RTC</h2>
+//       <div className="flex mx-auto sticky gap-4 border-2 bg-black w-fit p-2 rounded-xl max-md:flex-col">
+//         <div className="flex mx-auto justify-center gap-2">
+//           {/* Mic Toggle */}
+//           <button onClick={handleMicToggle} className={`p-3 rounded-full ${micEnabled ? "bg-green-500" : "bg-red-500"} text-white`}>
+//             {micEnabled ? <FaMicrophone size={15} /> : <FaMicrophoneAltSlash size={15} />}
+//           </button>
+
+//           {/* Video Toggle */}
+//           <button onClick={handleVideoToggle} className={`p-3 rounded-full ${videoEnabled ? "bg-green-500" : "bg-red-500"} text-white`}>
+//             {videoEnabled ? <FaVideo size={15} /> : <FaVideoSlash size={15} />}
+//           </button>
+
+//           <button
+//             disabled={!inCall}
+//             onClick={copyLink}
+//             className="p-3 rounded-full disabled:cursor-not-allowed px-2 py-1 disabled:bg-green-400 bg-green-500 text-white"
+//           >
+//             <div className={`${inCall ? "" : "cursor-not-allowed"} px-2 py-1 text-white rounded-md`} title="Copy Link">
+//               <FaCopy size={15} />
+//             </div>
+//           </button>
+//           <button
+//             disabled={!inCall}
+//             // onClick={takeScreenshot}
+//             className="p-3 rounded-full disabled:cursor-not-allowed px-2 py-1 disabled:bg-green-400 bg-green-500 text-white"
+//           >
+//             <div className={`${inCall ? "" : "cursor-not-allowed"} px-2 py-1 text-white rounded-md `} title="Take Screenshot">
+//               <FaCamera size={15} />
+//             </div>
+//           </button>
+
+//           {/* Hangup */}
+//           <button
+//             ref={hangupButtonRef}
+//             disabled={!inCall}
+//             onClick={hangup}
+//             className="p-3 rounded-full bg-red-500 text-white hover:bg-red-600 disabled:opacity-50 disabled:cursor-not-allowed"
+//           >
+//             <FaPhoneSlash size={15} />
+//           </button>
+//         </div>
+//         <RealTimeTranscript callId={callId} remoteStreams={remoteStreams} />
+//       </div>
+
+//       <div className={`flex mx-auto my-5 justify-center w-full gap-2 flex-wrap`}>
+//         <div className={`bg-gray-100 pt-2 rounded-lg shadow-md max-w-[33%] min-w-[500px] max-sm:w-full max-sm:min-w-[300px] max-md:min-w-[450px]`}>
+//           <h3 className="text-xl font-medium mb-2">You</h3>
+//           {isClient && (
+//             <video
+//               id="webcamVideo"
+//               ref={webcamVideoRef}
+//               autoPlay
+//               playsInline
+//               muted
+//               className={`w-[500px] aspect-video mx-auto rounded-b-md bg-[#202124]`}
+//             ></video>
+//           )}
+//           {!isClient && <div className="max-sm:w-[90%] max-lg:w-full w-[500px] aspect-video mx-auto rounded-md bg-[#202124] "></div>}
+//         </div>
+
+//         {remoteVideoRefs.map((_, index) => (
+//           <div
+//             key={index}
+//             className={`bg-gray-100 pt-2 rounded-lg shadow-md max-w-[33%] min-w-[500px] max-sm:w-full max-sm:min-w-[300px] max-md:min-w-[450px] ${
+//               remoteStreams[index] ? "" : "hidden"
+//             }`}
+//           >
+//             {nameList && nameList[index] ? (
+//               <h3 className="text-xl font-medium mb-2">{nameList[index]}</h3>
+//             ) : (
+//               <h3 className="text-xl font-medium mb-2">Remote Stream</h3>
+//             )}
+//             {isClient && <video ref={remoteVideoRefs[index]} autoPlay playsInline className="w-[500px] aspect-video mx-auto rounded-b-md bg-[#202124]"></video>}
+//             {!isClient && <div className="max-sm:w-[90%] max-lg:w-full w-[500px] aspect-video mx-auto rounded-md bg-[#202124] "></div>}
+//           </div>
+//         ))}
+//       </div>
+
+//       {inCall && <ScreenshotView callId={callId!} />}
+//     </div>
+//   );
+// };
+
+// export default Page;

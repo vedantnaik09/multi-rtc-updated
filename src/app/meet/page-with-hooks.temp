@@ -1,0 +1,324 @@
+// "use client";
+// import React, { Suspense, useEffect, useRef, useState, useCallback } from "react";
+// import { useSearchParams, usePathname, useRouter } from "next/navigation";
+// import { signInWithEmailAndPassword } from "firebase/auth";
+// import { FaMicrophone, FaMicrophoneAltSlash, FaVideo, FaVideoSlash, FaCopy, FaDesktop, FaPhoneSlash } from "react-icons/fa";
+// import { MdOutlineStopScreenShare } from "react-icons/md";
+// import { toast } from "react-hot-toast";
+// import { auth } from "../firebaseConfig";
+// import { useAuth } from "@/context/authContext";
+// import NameDialog from "@/components/NameDialog";
+
+// // Import all the hooks
+// import {
+//   useWebRTCState,
+//   useScreenShareState,
+//   useWebRTCHelpers,
+//   useHangupEffect,
+//   useIceConnectionStateChange,
+//   useRemoteVideoRefsEffect,  useMeetWebRTCInitEffect,
+//   useStreamEffect,
+//   useDebugEffect,
+//   useMeetAuthEffect,
+//   useMediaControlsMeet,
+//   useScreenShare,
+//   useStartWebcam,
+//   useHangup,
+//   useHandleAnswerButtonClickMeet
+// } from "@/hooks";
+
+// type OfferAnswerPair = {
+//   offer: {
+//     sdp: string | null;
+//     type: RTCSdpType;
+//   } | null;
+//   answer: {
+//     sdp: string | null;
+//     type: RTCSdpType;
+//   } | null;
+// };
+
+// const Page = () => {
+//   const [myName, setMyName] = useState<string | null>(null);
+
+//   return <Suspense fallback={<div>Loading...</div>}>{myName ? <PageContent myName={myName} /> : <NameDialog setMyName={setMyName} />}</Suspense>;
+// };
+
+// const PageContent: React.FC<{ myName: string }> = ({ myName }) => {
+//   const searchParams = useSearchParams();
+//   const pathname = usePathname();
+//   const { replace } = useRouter();
+
+//   // Initialize all state using hooks
+//   const {
+//     isClient,
+//     setIsClient,
+//     inCall,
+//     setInCall,
+//     callId,
+//     setCallId,
+//     webcamButtonRef,
+//     callInputRef,
+//     answerButtonRef,
+//     hangupButtonRef,
+//     webcamVideoRef,
+//     pcs,
+//     setPcs,
+//     myIndex,
+//     setMyIndex,
+//     remoteVideoRefs,
+//     setRemoteVideoRefs,
+//     remoteStreams,
+//     setRemoteStreams,
+//     micEnabled,
+//     setMicEnabled,
+//     videoEnabled,
+//     setVideoEnabled,
+//     accessGiven,
+//     setAccessGiven,
+//     nameList,
+//     setNameList,
+//     stream,
+//     setStream,
+//     localStreamRef,
+//     beforeCall,
+//     setBeforeCall,
+//     afterCall,
+//     setAfterCall,
+//     callLeft,
+//     setCallLeft
+//   } = useWebRTCState();
+
+//   // Initialize screen share state
+//   const {
+//     isScreenSharing,
+//     setIsScreenSharing,
+//     screenStreamFeed,
+//     setScreenStreamFeed
+//   } = useScreenShareState();
+
+//   // Initialize helpers
+//   const { servers } = useWebRTCHelpers();
+
+//   // Initialize auth hook
+//   const { user, loading } = useAuth();
+
+//   // Initialize action hooks
+//   const { hangup } = useHangup(
+//     callId,
+//     myIndex,
+//     pcs,
+//     setRemoteStreams,
+//     setRemoteVideoRefs,
+//     setPcs
+//   );
+
+//   const { handleAnswerButtonClick } = useHandleAnswerButtonClickMeet(
+//     setInCall,
+//     hangupButtonRef,
+//     searchParams,
+//     setCallId,
+//     pathname,
+//     replace,
+//     callInputRef,
+//     setMyIndex,
+//     setAfterCall,
+//     afterCall,
+//     servers,
+//     localStreamRef,
+//     setRemoteStreams,
+//     setNameList,
+//     setPcs,
+//     setBeforeCall,
+//     beforeCall,
+//     answerButtonRef,
+//     myName
+//   );
+
+//   // Initialize media controls
+//   const { handleMicToggle, handleVideoToggle, copyLink } = useMediaControlsMeet(
+//     micEnabled,
+//     setMicEnabled,
+//     videoEnabled,
+//     setVideoEnabled,
+//     stream,
+//     webcamVideoRef,
+//     pcs,
+//     localStreamRef
+//   );
+
+//   // Initialize screen share functionality
+//   const { startScreenShare, stopScreenShare, handleScreenShare, mergeAudioStreams } = useScreenShare(
+//     isScreenSharing,
+//     setIsScreenSharing,
+//     screenStreamFeed,
+//     setScreenStreamFeed,
+//     pcs,
+//     webcamVideoRef,
+//     stream,
+//     callId,
+//     beforeCall
+//   );
+
+//   // Initialize start webcam
+//   const { startWebcam } = useStartWebcam(
+//     setStream,
+//     setAccessGiven,
+//     webcamVideoRef,
+//     answerButtonRef,
+//     webcamButtonRef,
+//     localStreamRef
+//   );
+
+//   // Initialize effect hooks
+//   useHangupEffect(callId, myIndex, setRemoteVideoRefs, setRemoteStreams);
+  
+//   const { handleIceConnectionStateChange } = useIceConnectionStateChange(
+//     pcs,
+//     beforeCall,
+//     callLeft,
+//     setRemoteVideoRefs,
+//     setRemoteStreams,
+//     setCallLeft,
+//     setBeforeCall,
+//     setAfterCall
+//   );
+
+//   useRemoteVideoRefsEffect(remoteStreams, remoteVideoRefs, setRemoteVideoRefs);
+
+//   useMeetWebRTCInitEffect(
+//     setIsClient,
+//     setStream,
+//     setAccessGiven,
+//     setVideoEnabled,
+//     setMicEnabled,
+//     webcamVideoRef,
+//     answerButtonRef,
+//     webcamButtonRef,
+//     pcs,
+//     searchParams,
+//     setCallId,
+//     callInputRef,
+//     handleAnswerButtonClick,
+//     stream
+//   );
+
+//   useStreamEffect(stream, webcamVideoRef);
+//   useDebugEffect(pcs, nameList || []);
+//   useMeetAuthEffect(
+//     user,
+//     webcamButtonRef,
+//     answerButtonRef,
+//     startWebcam,
+//     handleAnswerButtonClick
+//   );
+
+//   // Set up peer connection listeners
+//   useEffect(() => {
+//     const listeners = new Map();
+
+//     pcs.forEach((pc, index) => {
+//       const listener = (event: Event) => {
+//         handleIceConnectionStateChange(event.currentTarget as RTCPeerConnection, index);
+//       };
+//       listeners.set(pc, listener);
+//       pc.addEventListener("connectionstatechange", listener);
+//     });
+
+//     return () => {
+//       listeners.forEach((listener, pc) => {
+//         pc.removeEventListener("connectionstatechange", listener);
+//       });
+//     };
+//   }, [pcs, handleIceConnectionStateChange]);
+
+//   // Set up button event listeners
+//   useEffect(() => {
+//     if (webcamButtonRef.current) {
+//       webcamButtonRef.current.onclick = startWebcam;
+//     }
+//     if (answerButtonRef.current) {
+//       answerButtonRef.current.onclick = handleAnswerButtonClick;
+//     }
+//   }, [startWebcam, handleAnswerButtonClick]);
+
+//   return (
+//     <div className="mx-auto p-5 ">
+//       <h2 className="text-2xl font-semibold my-4">Multi-RTC</h2>
+//       {accessGiven && (
+//         <div className="my-5 flex sticky justify-center gap-4 bg-black w-fit mx-auto p-2 rounded-xl bottom-2 left-0 right-0">
+//           {/* Mic Toggle */}
+//           <button onClick={handleMicToggle} className={`p-3 rounded-full ${micEnabled ? "bg-green-500" : "bg-red-500"} text-white`}>
+//             {micEnabled ? <FaMicrophone size={15} /> : <FaMicrophoneAltSlash size={15} />}
+//           </button>
+
+//           {/* Video Toggle */}
+//           <button onClick={handleVideoToggle} className={`p-3 rounded-full ${videoEnabled ? "bg-green-500" : "bg-red-500"} text-white`}>
+//             {videoEnabled ? <FaVideo size={15} /> : <FaVideoSlash size={15} />}
+//           </button>
+
+//           <button
+//             disabled={!inCall}
+//             onClick={copyLink}
+//             className="p-3 rounded-full disabled:cursor-not-allowed px-2 py-1 disabled:bg-green-400 bg-green-500 text-white"
+//           >
+//             <div className={`${inCall ? "" : "cursor-not-allowed"} px-2 py-1 text-white rounded-md `} title="Copy Link">
+//               <FaCopy size={15} />
+//             </div>
+//           </button>
+
+//           {/* Screen Share */}
+//           <button onClick={handleScreenShare} className={`p-3 rounded-full ${isScreenSharing ? "bg-green-500" : "bg-red-500"} text-white`}>
+//             {!isScreenSharing ? <MdOutlineStopScreenShare size={15} /> : <FaDesktop size={15} />}
+//           </button>
+
+//           {/* Hangup */}
+//           <button
+//             ref={hangupButtonRef}
+//             disabled={!inCall}
+//             onClick={hangup}
+//             className="p-3 rounded-full bg-red-500 text-white hover:bg-red-600 disabled:opacity-50 disabled:cursor-not-allowed"
+//           >
+//             <FaPhoneSlash size={15} />
+//           </button>
+//         </div>
+//       )}
+
+//       <div className={`flex mx-auto justify-center w-full gap-2 flex-wrap`}>
+//         <div className={`bg-gray-100 pt-2 rounded-lg shadow-md max-w-[33%] min-w-[500px] max-sm:w-full max-sm:min-w-[300px] max-md:min-w-[450px]`}>
+//           <h3 className="text-xl font-medium mb-2">You</h3>
+//           {isClient && (
+//             <video
+//               id="webcamVideo"
+//               ref={webcamVideoRef}
+//               autoPlay
+//               playsInline
+//               muted
+//               className={`w-[500px] aspect-video mx-auto rounded-b-md bg-[#202124]`}
+//             ></video>
+//           )}
+//           {!isClient && <div className="max-sm:w-[90%] max-lg:w-full w-[500px] aspect-video mx-auto rounded-md bg-[#202124] "></div>}
+//         </div>
+
+//         {remoteVideoRefs.map((_, index) => (
+//           <div
+//             key={index}
+//             className={`bg-gray-100 pt-2 rounded-lg shadow-md max-w-[33%] min-w-[500px] max-sm:w-full max-sm:min-w-[300px] max-md:min-w-[450px] ${
+//               remoteStreams[index] ? "" : "hidden"
+//             }`}
+//           >
+//             {nameList && nameList[index] ? (
+//               <h3 className="text-xl font-medium mb-2">{nameList[index]}</h3>
+//             ) : (
+//               <h3 className="text-xl font-medium mb-2">Remote Stream</h3>
+//             )}
+//             {isClient && <video ref={remoteVideoRefs[index]} autoPlay playsInline className="w-[500px] aspect-video mx-auto rounded-b-md bg-[#202124]"></video>}
+//             {!isClient && <div className="max-sm:w-[90%] max-lg:w-full w-[500px] aspect-video mx-auto rounded-md bg-[#202124] "></div>}
+//           </div>
+//         ))}
+//       </div>
+//     </div>
+//   );
+// };
+
+// export default Page;
