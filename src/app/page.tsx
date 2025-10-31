@@ -10,7 +10,7 @@ const Page = () => {
 
   useEffect(() => {
     if (!loading) {
-      router.replace("/transcript");
+      router.replace("/host");
     }
   }, [loading, user, router]);
 
