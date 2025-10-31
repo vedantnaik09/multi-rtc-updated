@@ -12,7 +12,7 @@ export const useMediaControls = (
 
   const copyLink = () => {
     const currentUrl = new URL(window.location.href);
-    if (currentUrl.pathname === "/transcript") {
+    if (currentUrl.pathname === "/host") {
       currentUrl.pathname = "/meet";
     }
 

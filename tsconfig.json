@@ -22,6 +22,6 @@
       "@/*": ["./src/*"]
     }
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "src/app/meet/page-with-hooks.temp", "src/app/transcript/page-with-hooks.temp"],
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "src/app/meet/page-with-hooks.temp", "src/app/host/page-with-hooks.temp"],
   "exclude": ["node_modules"]
 }

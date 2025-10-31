@@ -19,8 +19,7 @@ import {
   useDebugEffect,
   useMediaControlsTranscript,
   useHangup,
-  useHandleCallButtonClick,
-  useHandleAnswerButtonClickTranscript
+  useHandleCallButtonClick
 } from "@/hooks";
 
 type OfferAnswerPair = {
@@ -126,29 +125,13 @@ const TranscriptMeet = () => {
     setPcs,
     localStreamRef,
     setRemoteStreams,
-    setNameList
+    setNameList,
+    "Host", // myName parameter - using default "Host" name
+    setAfterCall // setAfterCall parameter
   );
 
-  const { handleAnswerButtonClick } = useHandleAnswerButtonClickTranscript(
-    setInCall,
-    hangupButtonRef,
-    searchParams,
-    setCallId,
-    pathname,
-    replace,
-    callInputRef,
-    setMyIndex,
-    setAfterCall,
-    afterCall,
-    servers,
-    localStreamRef,
-    setRemoteStreams,
-    setNameList,
-    setPcs,
-    setBeforeCall,
-    beforeCall,
-    answerButtonRef
-  );
+  // Host uses unified system for both creating AND joining calls
+  // No separate transcript join logic needed - handleCallButtonClick handles everything
 
   // Initialize media controls
   const { handleMicToggle, handleVideoToggle, copyLink } = useMediaControlsTranscript(
@@ -192,8 +175,8 @@ const TranscriptMeet = () => {
     searchParams,
     setCallId,
     callInputRef,
-    handleAnswerButtonClick,
-    handleCallButtonClick,
+    handleCallButtonClick, // Use unified logic for joining existing calls
+    handleCallButtonClick, // Use unified logic for creating new calls
     stream,
     localStreamRef
   );
